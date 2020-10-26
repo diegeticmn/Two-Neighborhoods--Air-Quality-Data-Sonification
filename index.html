@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Two Neighborhoods</title>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="libraries/tone.js" type="text/javascript"></script>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 50%;
+        width: 70%;
+      }
+
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      #bg {
+        width: 90%;
+        height: 1000px;
+        background-color: rgba(255, 255, 255, 0.6);
+        margin: 5px;
+        padding: 20px;
+        margin: auto;
+      }
+
+      html, body {
+        height: 100%;
+        background-color: #2B2C2E;
+        background-image: url("images/bg.jpg");
+        background-repeat: no-repeat;
+        background-size: cover;
+        color: black;
+        font-family: 'Verdana', 'Geneva', 'sans-serif';
+      }
+
+      a {
+        color: #026E88;
+      }
+
+      a.button1 {
+        display:inline-block;
+        padding:0.35em 1.2em;
+        border:0.1em solid black;
+        margin:0 0.3em 0.3em 0;
+        border-radius:0.12em;
+        box-sizing: border-box;
+        text-decoration:none;
+        font-weight:300;
+        color:black;
+        text-align:center;
+        transition: all 0.2s;
+        width: 90%;
+      }
+      a.button1:hover{
+        color:white;
+        background-color:black;
+      }
+
+      #content {
+        float: right;
+        width: 25%;
+      }
+
+      .click {
+        position: inline-block;
+        cursor: pointer;
+        padding:0.35em 1.2em;
+        border:0.1em solid black;
+        color: black;
+        margin:0 0.3em 0.3em 0;
+        border-radius:0.12em;
+        box-sizing: border-box;
+        text-decoration:none;
+        font-weight:300;
+        text-align:center;
+        transition: all 0.2s;
+        width: 90%;
+      }
+
+      button {
+        background-color: rgba(255, 255, 255, 0.6);
+
+      }
+      .click:hover{
+        color:white;
+        background-color:black;
+        opacity: 0.6;
+      }
+
+      /* The Modal (background) */
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content/Box */
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+      }
+
+      /* The Close Button */
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      #socials {
+        display: flex !important;
+        justify-content: center !important;
+
+      }
+
+      #socials img {
+        padding: 5px !important;
+      }
+
+      hr {
+        height: 6px;
+        border: 0;
+        color: black;
+      }
+
+      #loading {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      #loadcontent {
+          background-color: #fefefe;
+          margin: 15% auto; /* 15% from the top and centered */
+          padding: 20px;
+          border: 1px solid #888;
+          width: 50%; /* Could be more or less, depending on screen size */
+      }
+
+      @media only screen and (max-width: 700px) {
+
+        #map {
+          width: 100%;
+          height: 25%
+        }
+        #content {
+          float: left;
+          width: 100%;
+        }
+
+      }
+
+    </style>
+    <script>
+      function onReady(callback) {
+        var intervalId = window.setInterval(function() {
+          if (document.getElementsByTagName('body')[0] !== undefined) {
+            window.clearInterval(intervalId);
+            callback.call(this);
+          }
+        }, 1000);
+        }
+
+        function setVisible(selector, visible) {
+        document.querySelector(selector).style.display = visible ? 'block' : 'none';
+        }
+
+        onReady(function() {
+        setVisible('#loading', false);
+      });
+
+    </script>
+  </head>
+  <body>
+    <div id="loading">
+      <div id="loadcontent">
+        <center>
+          <h3>Hold on one sec, the instrument takes a minute to load...</h3>
+          <img src="images/loading.gif" width="50%">
+        </center>
+      </div>
+    </div>
+    <div id="header">
+      <center><img src="images/logo.png" width="400px" ></center>
+    </div>
+    <div id="bg">
+
+      <h3>Air quality can vary widely between neighborhoods. <br />
+        Select two of the sensors below to hear how your air quality compares to your neighbor's.</h3>
+
+      <div id="content">
+
+        <center>
+          <h3>Hear the Album</h3>
+          <a href='https://open.spotify.com/album/7teE3PhBiYZeKDBXxn6fvt?si=CE8HqDJwRv6C1cRorIDCtg'><img src="images/cover.png" width="50%"></a>
+        </center>
+        <p>
+          Listen to Two Neighborhoods, the album, by Diegetic. By distorting and changing the soundscapes from this instrument using human instrumentation, Diegetic highlights inequities in air pollution in our communities.
+          Listen on <a href='https://open.spotify.com/album/7teE3PhBiYZeKDBXxn6fvt?si=CE8HqDJwRv6C1cRorIDCtg'>Spotify</a> or <a href="https://www.diegetic.bandcamp.com/album/two-neighborhoods">Bandcamp</a>.
+        </p>
+
+        <center><button class="click" id="myBtn"><h3>Info</h3></button><br /></center>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- Modal content -->
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Your Neighborhoods</h3>
+            <p id="fill">Select two markers on the map to hear their air quality.</p>
+            <h3>What Is This?</h3>
+            <p>
+              This is a musical instrument that turns air quality into music! <br /><br />This project aims to raise awareness regarding inequities in air quality between neighborhoods by turning air pollution into music.<br><br>
+              One of the greatest determiners of your health is your zip code. Air pollution is far higher in poor neighborhoods than nearby affluent neighborhoods. Often, this is due to the proximity to highways, factories, oil refineries, and other industrial sources.
+              Neighborhoods with high levels of air pollution are also disproportianely lived in by People of Color, leading to a form of aerosolized racism. Often, these communities are forced to shoulder the impacts of pollution, but see little of the economic benefits from the creation of these pollutants.<br><br>
+              The long term health impacts of this are vast. Neighborhoods with lower air quality see higher rates of cancer and respiratory illnesses like asthma. Those who live in neighborhoods with high levels of air pollution have an average livespan 4 years shorter than their luckier neighbors. In the United States alone, over 100,000 people die each year due to air pollution. <br><br>
+              Air pollution can also have immediate health impacts. On days when fine particle concentrations increase in a community, more people die from heart attacks and respiratory problems.
+              The music created here changes based on the differences in air quality between the two selected neighborhoods, becoming more chaotic and dark when there are vast differences in air quality, and calmer and more relaxing when differences are smaller.
+              Worse air quality in the two neighborhoods will distort the music and cause "errors" to occur in the melody.
+              Better air quality will minimize distortion and reduce errors. The further apart the two neighborhoods are, the more distant the music will sound.
+            </p>
+            <h3>How Do I Read This Map?</h3>
+            <p>
+              This map displays air quality using "PM2.5 Values." That, is, the number of particles in a cubic meter of air that are smaller than 2.5 micrometers in diameter (a human hair is about 70 micrometers in diameter).
+              These particles are inhaled and become embedded in your lungs or enter your bloodstream. These particles are also the primary cause of the "haze" of pollution.<br><br>
+              A PM2.5 Value of less than 12 is generally considered to be acceptable air quality (although lower is far better). A value between 12 and 35 can be moderately dangerous for sensitive groups, like those with respiratory disorders or the elderly.
+              A value between 35 and 55 is considered moderately hazardous for all groups. Values above 55 become immediately dangerous and can cause long-term health impacts.<br><br>
+              But even long-term exposure to air quality levels in the 30s and above can lead to worse health outcomes in humans. That is why even low level pollution - like from living near a highway - can cause harm in neighborhoods.
+            </p>
+            <h3>More About How This Works</h3>
+            <p>
+              The difference in air quality between the two neighborhoods determines if a major key or minor key is selected. This difference also determines the chord progression. A "normal," "relaxing" chord progression is chosen if the neighborhoods have very similar air qualities, and progressively more "chaotic," "unnatural" progressions are chosen as the air qualities diverge.
+              The air quality of the first neighborhood chosen determines the root note (and from that, the key) of the progression. The higher the air quality, the higher the root tone will be. The air quality of the first neighborhood also selects the timbre of the synthesizer used for the backing chord progression. Lighter, airier sounds signify good air quality, while darker, ominous sounds signify worse.
+              The air quality of the second neighborhood selects the timbre of the synthesizer for the melody under the same premise just described. The air quality of the second neighborhood also determines the relative "chaos" of the melody. Worse air quality will create more errors in the melody in the form of missed or off-beat notes.
+              The distance in miles between the two air monitors chosen determines how much reverb is put on the mix of the two. The further the two neighborhoods are from each other, the more "distant" the music will sound.
+            </p>
+
+            <p>
+              <br />
+              This project and the accompanying album were funded by a grant from the <a href="http://aracouncil.org/" target="_blank">Arrowhead Regional Arts Council</a>.
+              This web application was built using <a href="https://tonejs.github.io/" target="_blank">Tone.js</a> and data from public <a href="https://www2.purpleair.com/" target="_blank">Purple Air</a> monitors.
+            </p>
+          </div>
+
+
+        </div>
+        <center>
+        <button class="click" onclick="wipe()"><h4>Hear Two More Neighborhoods</h4></button>
+
+        <div id="socials">
+          <a href="https://diegeticmn.com" target="_blank"><img src="images/diegetic.png" width="25"></a>
+          <a href="https://diegetic.bandcamp.com" target="_blank"><img src="images/bc.png" width="25"></a>
+          <a href="https://twitter.com/diegeticmn" target="_blank"><img src="images/twitter.png" width="25"></a>
+          <a href="https://instagram.com/diegetic_mn" target="_blank"><img src="images/instagram.png" width="25"></a>
+          <a href="https://github.com/kevinswanberg" target="_blank"><img src="images/github.png" width="25"></a>
+        </div>
+        </center>
+
+      </div>
+
+
+      <div id="map"></div>
+      <img src="images/range.png" alt="color range" width="300">
+    <script>
+      var map;
+
+      //MAP DESIGN
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 5,
+          mapTypeControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+          center: new google.maps.LatLng(41.850033, -87.6500523),
+          styles: [
+            {
+                "featureType": "all",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "administrative",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "administrative",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    {
+                        "color": "#444444"
+                    },
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "administrative.neighborhood",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "on"
+                    },
+                    {
+                        "color": "#e0dfe0"
+                    }
+                ]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "poi.park",
+                "elementType": "geometry",
+                "stylers": [
+                    {
+                        "color": "#a8a9a8"
+                    },
+                    {
+                        "visibility": "on"
+                    }
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "saturation": -100
+                    },
+                    {
+                        "lightness": 45
+                    }
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "visibility": "on"
+                    },
+                    {
+                        "color": "#5b5b5a"
+                    }
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "simplified"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "labels.icon",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "transit",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "transit",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "water",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "color": "#ffffff"
+                    },
+                    {
+                        "visibility": "on"
+                    }
+                ]
+            },
+            {
+                "featureType": "water",
+                "elementType": "labels",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            }
+        ]
+        });
+      }
+    </script>
+    <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0txFotxM93PyYXZsbFip7lbCg3xQd2x4&callback=initMap", SameSite="None">
+    </script>
+    <script>
+
+    //THIS IS ALL THE MUSIC AND AIR QUALITY FUNCTIONALITY
+    //JUST GOING TO SAY HERE THAT THIS CODE IS ABSOLUTELY F*CKED. IF YOU'RE TRYING TO READ THIS GOOD LUCK BUD.
+    //IF YOU WANT TO CLEAN THIS UP AND SEND IT TO ME THAT'S GREAT. OTHERWISE, HAVE FUN.
+
+//These variables are where we store the marker data
+    var marka = 'empty';
+    var markb = 'empty';
+
+// ******* INSTRUMENTS *******
+
+//some overall compression to keep the levels in check
+var masterCompressor = new Tone.Compressor({
+	"threshold" : -6,
+	"ratio" : 3,
+	"attack" : 0.5,
+	"release" : 0.1
+});
+//give a little boost to the lows
+var lowBump = new Tone.Filter(200, "lowshelf");
+//route everything through the filter
+//and compressor before going to the speakers
+var vol = new Tone.Volume(-2);
+Tone.Master.chain(vol, lowBump, masterCompressor);
+
+//These are for measuring distance
+var markalat = 0;
+var markalon = 0;
+var markblat = 0;
+var markblon = 0;
+
+  var MIDI_NUM_NAMES = ["C_1", "C#_1", "D_1", "D#_1", "E_1", "F_1", "F#_1", "G_1", "G#_1", "A_1", "A#_1", "B_1",
+                  "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0",
+                  "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
+                  "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
+                  "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+                  "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+                  "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
+                  "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
+                  "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
+                  "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8",
+                  "C9", "C#9", "D9", "D#9", "E9", "F9", "F#9", "G9"];
+
+  var lightsynth = new Tone.Sampler({
+    "C3" : "Samples/LightPad/PadC3.mp3",
+    "C#3" : "Samples/LightPad/PadC#3.mp3",
+    "D3" : "Samples/LightPad/PadD3.mp3",
+    "D#3" : "Samples/LightPad/PadD#3.mp3",
+    "E3" : "Samples/LightPad/PadE3.mp3",
+    "F3" : "Samples/LightPad/PadF3.mp3",
+    "F#3" : "Samples/LightPad/PadF#3.mp3",
+    "G3" : "Samples/LightPad/PadG3.mp3",
+    "G#3" : "Samples/LightPad/PadG#3.mp3",
+    "A3" : "Samples/LightPad/PadA3.mp3",
+    "A#3" : "Samples/LightPad/PadA#3.mp3",
+    "B3" : "Samples/LightPad/PadB3.mp3",
+    "C4" : "Samples/LightPad/PadC4.mp3",
+    "C#4" : "Samples/LightPad/PadC#4.mp3",
+    "D4" : "Samples/LightPad/PadD4.mp3",
+    "D#4" : "Samples/LightPad/PadD#4.mp3",
+    "E4" : "Samples/LightPad/PadE4.mp3",
+    "F4" : "Samples/LightPad/PadF4.mp3",
+    "F#4" : "Samples/LightPad/PadF#4.mp3",
+    "G4" : "Samples/LightPad/PadG4.mp3",
+    "G#4" : "Samples/LightPad/PadG#4.mp3",
+    "A4" : "Samples/LightPad/PadA4.mp3",
+    "A#4" : "Samples/LightPad/PadA#4.mp3",
+    "B4" : "Samples/LightPad/PadB4.mp3",
+  }, {
+    release: 1
+  }).toMaster();
+
+  lightsynth.volume.value = -8;
+
+
+  var modsynth = new Tone.Sampler({
+    "C3" : "Samples/ModPad/ModC3.mp3",
+    "C#3" : "Samples/ModPad/ModC#3.mp3",
+    "D3" : "Samples/ModPad/ModD3.mp3",
+    "D#3" : "Samples/ModPad/ModD#3.mp3",
+    "E3" : "Samples/ModPad/ModE3.mp3",
+    "F3" : "Samples/ModPad/ModF3.mp3",
+    "F#3" : "Samples/ModPad/ModF#3.mp3",
+    "G3" : "Samples/ModPad/ModG3.mp3",
+    "G#3" : "Samples/ModPad/ModG#3.mp3",
+    "A3" : "Samples/ModPad/ModA3.mp3",
+    "A#3" : "Samples/ModPad/ModA#3.mp3",
+    "B3" : "Samples/ModPad/ModB3.mp3",
+    "C4" : "Samples/ModPad/ModC4.mp3",
+    "C#4" : "Samples/ModPad/ModC#4.mp3",
+    "D4" : "Samples/ModPad/ModD4.mp3",
+    "D#4" : "Samples/ModPad/ModD#4.mp3",
+    "E4" : "Samples/ModPad/ModE4.mp3",
+    "F4" : "Samples/ModPad/ModF4.mp3",
+    "F#4" : "Samples/ModPad/ModF#4.mp3",
+    "G4" : "Samples/ModPad/ModG4.mp3",
+    "G#4" : "Samples/ModPad/ModG#4.mp3",
+    "A4" : "Samples/ModPad/ModA4.mp3",
+    "A#4" : "Samples/ModPad/ModA#4.mp3",
+    "B4" : "Samples/ModPad/ModB4.mp3"
+  }, {
+    release: 1
+  }).toMaster();
+
+  modsynth.volume.value = -12;
+
+  var darksynth = new Tone.Sampler({
+    "C3" : "Samples/DarkPad/DarkC3.mp3",
+    "C#3" : "Samples/DarkPad/DarkC#3.mp3",
+    "D3" : "Samples/DarkPad/DarkD3.mp3",
+    "D#3" : "Samples/DarkPad/DarkD#3.mp3",
+    "E3" : "Samples/DarkPad/DarkE3.mp3",
+    "F3" : "Samples/DarkPad/DarkF3.mp3",
+    "F#3" : "Samples/DarkPad/DarkF#3.mp3",
+    "G3" : "Samples/DarkPad/DarkG3.mp3",
+    "G#3" : "Samples/DarkPad/DarkG#3.mp3",
+    "A3" : "Samples/DarkPad/DarkA3.mp3",
+    "A#3" : "Samples/DarkPad/DarkA#3.mp3",
+    "B3" : "Samples/DarkPad/DarkB3.mp3",
+    "C4" : "Samples/DarkPad/DarkC4.mp3",
+    "C#4" : "Samples/DarkPad/DarkC#4.mp3",
+    "D4" : "Samples/DarkPad/DarkD4.mp3",
+    "D#4" : "Samples/DarkPad/DarkD#4.mp3",
+    "E4" : "Samples/DarkPad/DarkE4.mp3",
+    "F4" : "Samples/DarkPad/DarkF4.mp3",
+    "F#4" : "Samples/DarkPad/DarkF#4.mp3",
+    "G4" : "Samples/DarkPad/DarkG4.mp3",
+    "G#4" : "Samples/DarkPad/DarkG#4.mp3",
+    "A4" : "Samples/DarkPad/DarkA4.mp3",
+    "A#4" : "Samples/DarkPad/DarkA#4.mp3",
+    "B4" : "Samples/DarkPad/DarkB4.mp3"
+  }, {
+    release: 1
+  }).toMaster();
+
+  darksynth.volume.value = -12;
+
+  var lightlead = new Tone.Sampler({
+    "C4" : "Samples/LightLead/LightLeadC4.mp3",
+    "C#4" : "Samples/LightLead/LightLeadC#4.mp3",
+    "D4" : "Samples/LightLead/LightLeadD4.mp3",
+    "D#4" : "Samples/LightLead/LightLeadD#4.mp3",
+    "E4" : "Samples/LightLead/LightLeadE4.mp3",
+    "F4" : "Samples/LightLead/LightLeadF4.mp3",
+    "F#4" : "Samples/LightLead/LightLeadF#4.mp3",
+    "G4" : "Samples/LightLead/LightLeadG4.mp3",
+    "G#4" : "Samples/LightLead/LightLeadG#4.mp3",
+    "A4" : "Samples/LightLead/LightLeadA4.mp3",
+    "A#4" : "Samples/LightLead/LightLeadA#4.mp3",
+    "B4" : "Samples/LightLead/LightLeadB4.mp3",
+    "C5" : "Samples/LightLead/LightLeadC5.mp3",
+    "C#5" : "Samples/LightLead/LightLeadC#5.mp3",
+    "D5" : "Samples/LightLead/LightLeadD5.mp3",
+    "D#5" : "Samples/LightLead/LightLeadD#5.mp3",
+    "E5" : "Samples/LightLead/LightLeadE5.mp3",
+    "F5" : "Samples/LightLead/LightLeadF5.mp3",
+    "F#5" : "Samples/LightLead/LightLeadF#5.mp3",
+    "G5" : "Samples/LightLead/LightLeadG5.mp3",
+    "G#5" : "Samples/LightLead/LightLeadG#5.mp3",
+    "A5" : "Samples/LightLead/LightLeadA5.mp3",
+    "A#5" : "Samples/LightLead/LightLeadA#5.mp3",
+    "B5" : "Samples/LightLead/LightLeadB5.mp3",
+  }).toMaster();
+
+  lightlead.volume.value = -4;
+
+  var modlead = new Tone.Sampler({
+    "C4" : "Samples/ModLead/ModLeadC4.mp3",
+    "C#4" : "Samples/ModLead/ModLeadC#4.mp3",
+    "D4" : "Samples/ModLead/ModLeadD4.mp3",
+    "D#4" : "Samples/ModLead/ModLeadD#4.mp3",
+    "E4" : "Samples/ModLead/ModLeadE4.mp3",
+    "F4" : "Samples/ModLead/ModLeadF4.mp3",
+    "F#4" : "Samples/ModLead/ModLeadF#4.mp3",
+    "G4" : "Samples/ModLead/ModLeadG4.mp3",
+    "G#4" : "Samples/ModLead/ModLeadG#4.mp3",
+    "A4" : "Samples/ModLead/ModLeadA4.mp3",
+    "A#4" : "Samples/ModLead/ModLeadA#4.mp3",
+    "B4" : "Samples/ModLead/ModLeadB4.mp3",
+    "C5" : "Samples/ModLead/ModLeadC5.mp3",
+    "C#5" : "Samples/ModLead/ModLeadC#5.mp3",
+    "D5" : "Samples/ModLead/ModLeadD5.mp3",
+    "D#5" : "Samples/ModLead/ModLeadD#5.mp3",
+    "E5" : "Samples/ModLead/ModLeadE5.mp3",
+    "F5" : "Samples/ModLead/ModLeadF5.mp3",
+    "F#5" : "Samples/ModLead/ModLeadF#5.mp3",
+    "G5" : "Samples/ModLead/ModLeadG5.mp3",
+    "G#5" : "Samples/ModLead/ModLeadG#5.mp3",
+    "A5" : "Samples/ModLead/ModLeadA5.mp3",
+    "A#5" : "Samples/ModLead/ModLeadA#5.mp3",
+    "B5" : "Samples/ModLead/ModLeadB5.mp3",
+  }).toMaster();
+
+  modlead.volume.value = -6;
+
+  var darklead = new Tone.Sampler({
+    "C4" : "Samples/DarkLead/DarkLeadC4.mp3",
+    "C#4" : "Samples/DarkLead/DarkLeadC#4.mp3",
+    "D4" : "Samples/DarkLead/DarkLeadD4.mp3",
+    "D#4" : "Samples/DarkLead/DarkLeadD#4.mp3",
+    "E4" : "Samples/DarkLead/DarkLeadE4.mp3",
+    "F4" : "Samples/DarkLead/DarkLeadF4.mp3",
+    "F#4" : "Samples/DarkLead/DarkLeadF#4.mp3",
+    "G4" : "Samples/DarkLead/DarkLeadG4.mp3",
+    "G#4" : "Samples/DarkLead/DarkLeadG#4.mp3",
+    "A4" : "Samples/DarkLead/DarkLeadA4.mp3",
+    "A#4" : "Samples/DarkLead/DarkLeadA#4.mp3",
+    "B4" : "Samples/DarkLead/DarkLeadB4.mp3",
+    "C5" : "Samples/DarkLead/DarkLeadC5.mp3",
+    "C#5" : "Samples/DarkLead/DarkLeadC#5.mp3",
+    "D5" : "Samples/DarkLead/DarkLeadD5.mp3",
+    "D#5" : "Samples/DarkLead/DarkLeadD#5.mp3",
+    "E5" : "Samples/DarkLead/DarkLeadE5.mp3",
+    "F5" : "Samples/DarkLead/DarkLeadF5.mp3",
+    "F#5" : "Samples/DarkLead/DarkLeadF#5.mp3",
+    "G5" : "Samples/DarkLead/DarkLeadG5.mp3",
+    "G#5" : "Samples/DarkLead/DarkLeadG#5.mp3",
+    "A5" : "Samples/DarkLead/DarkLeadA5.mp3",
+    "A#5" : "Samples/DarkLead/DarkLeadA#5.mp3",
+    "B5" : "Samples/DarkLead/DarkLeadB5.mp3",
+  }).toMaster();
+
+  darklead.volume.value = -4;
+
+// ******* END INSTRUMENTS *******
+
+// ******* MUSIC FUNCTIONS *******
+
+    //goes from least chaotic to most chaotic
+    var majorchords = [[[0,4,7], [5,9,0], [7,11,2], [0,4,7]], [[2,5,9], [7,11,2], [0,4,7], [9,0,4]], [[5,9,0],[7,11,2],[0,4,7], [5,9,0]], [[5,9,0], [0,4,7], [7,11,2], [9,0,4]]];
+    var minorchords = [[[0,3,7], [5,8,0], [7,10,2], [0,3,7]], [[2,5,8], [7,10,2], [0,3,7], [8,0,3]], [[5,8,0],[7,10,2],[0,3,7], [5,8,0]], [[5,8,0], [0,3,7], [7,10,2], [8,0,3]]];
+    var majorscale = [0,2,4,5,7,9,11,12];
+    var minorscale = [0,2,3,5,7,8,10,12];
+
+    function setReverb(distance) {
+      if (distance > 500) {
+        val = 500;
+      } else {
+        val = distance;
+      }
+      perc = (val) / (500);
+      return perc;
+    }
+
+    function playPiano(root, key) {
+      if (key == 0) {
+        var scale = majorscale;
+      } else {
+        var scale = minorscale;
+      }
+
+      var base = root+12;
+      var melody = [];
+
+      for(let i=0; i<16; i++) {
+        var rand = scale[Math.floor(Math.random()*scale.length)];
+        var midi = rand+base;
+        var note = MIDI_NUM_NAMES[midi];
+        melody.push(note);
+      }
+      return melody;
+
+    }
+
+    function makeChordArray(root, chordFormula, timeInterval) {
+        var indexMIDI
+        var aChord = [];
+
+        var chordArray = [];
+        for(let i=0; i<chordFormula.length; i++) {
+            for(let j=0; j<chordFormula[i].length; j++) {
+                // add the root to each chord tone
+                indexMIDI = chordFormula[i][j] + Number(root);
+                // tranlate to a pitch/octave name
+                aChord.push(MIDI_NUM_NAMES[indexMIDI]);
+            }
+            j = 0;
+            // create add time and chord together
+            chordArray.push(aChord);
+            // now calc the time value for next time
+            // clear the arrays;
+            aChord = [];
+        }
+        console.log(chordArray);
+        return chordArray;
+    }
+
+    function playchords(key, scaleda, scaledb, far) {
+
+      if (key == 0) {
+        var chords = majorchords;
+      } else {
+        var chords = minorchords;
+      }
+
+      //use abs value of difference between two to choose a chord progression
+      if ((Math.abs(scaleda-scaledb))<2) {
+        //similar aqi
+        var progression = chords[0];
+      } else if ((Math.abs(scaleda-scaledb))<5) {
+        //somewhat similar aqi
+        var progression = chords[1];
+      } else if ((Math.abs(scaleda-scaledb))<10) {
+        //very far apart aqi
+        var progression = chords[2];
+      } else {
+        //exremely far apart aqi
+        var progression = chords[3];
+      }
+
+      if (scaleda>100) {
+        scaleda=100;
+      }
+      if (scaledb>100) {
+        scaledb=100;
+      }
+
+      var percent = ((scaleda) / (100));
+      var root = Math.round(((percent * (72 - 48)) + 48));
+      console.log(root);
+
+      var reverb = new Tone.Reverb().toMaster();
+
+      reverb.wet.value = setReverb(far);
+      console.log(reverb)
+
+      if (scaleda<12) {
+        var mainsynth = lightsynth;
+      } else if (scaleda<35) {
+        var mainsynth = modsynth;
+      } else {
+        var mainsynth = darksynth;
+      }
+
+      if (scaledb<12) {
+        var lead = lightlead;
+      } else if (scaledb<35) {
+        var lead = modlead;
+      } else {
+        var lead = darklead;
+      }
+
+      mainsynth.connect(reverb);
+
+      var myChords = makeChordArray(root, progression, '1m');
+      var chordPart = new Tone.Sequence(function(time, chord){
+        mainsynth.triggerAttackRelease(chord, "1m");
+      }, myChords, "1m" ).start(0);
+
+      var pianos = playPiano(root, key);
+      var pianoPart = new Tone.Sequence(function(time, note){
+        lead.triggerAttackRelease(note, "4n");
+      }, pianos, "4n" ).start(0);
+
+      lead.connect(reverb);
+
+      console.log(pianoPart);
+
+      chordPart.humanize= true;
+      chordPart.loop = true;
+      chordPart.loopStart = "0.0";
+      chordPart.loopEnd = "4.0";
+
+      pianoPart.humanize = true;
+      pianoPart.loop = true;
+      pianoPart.loopStart = "0.0";
+      pianoPart.loopEnd = "4.0";
+
+    	var tempo = 30;
+    	Tone.Transport.bpm.value = tempo;
+    	Tone.Transport.start("+0.1");
+    }
+
+  function chooseKey(scaleda, scaledb) {
+    if ((scaleda<4)&&(scaledb<4)) {
+      // major scale
+      return 0;
+    } else {
+      // minor scale
+      return 1;
+    }
+  }
+
+// ******* END MUSIC FUNCTIONS *******
+
+
+
+// ******* SCALING AND MAP FUNCTIONS *******
+
+function fillData(marka, markb, far) {
+  var p = document.getElementById("fill");
+  if(marka < 12) {
+    ratinga = "good air quality. This air is safe for most populations.";
+  } else if (marka<35) {
+    ratinga = "moderate air quality. This air is considered somewhat unhealthy for vulnerable populations.";
+  } else if (marka<55) {
+    ratinga = "bad air quality. This air is considered somewhat unhealthy for most populations, especially vulnerable populations.";
+  } else {
+    ratinga = "very bad air quality. This air can have immediate health impacts.";
+  }
+
+  if(markb < 12) {
+    ratingb = "good air quality. This air is safe for most populations.";
+  } else if (markb<35) {
+    ratingb = "moderate air quality. This air is considered somewhat unhealthy for vulnerable populations.";
+  } else if (markb<55) {
+    ratingb = "bad air quality. This air is considered somewhat unhealthy for most populations, especially vulnerable populations.";
+  } else {
+    ratingb = "very bad air quality. This air can have immediate health impacts.";
+  }
+
+  text = "";
+  text = text.concat("The first neigbhorhood you selected has an air quality level of ", marka.toString(), ". This is considered to be ", ratinga, " The second neighborhood you selected has an air quality level of ", markb.toString(), ". This is considered to be ", ratingb);
+  p.innerText = text;
+}
+
+
+    function colorMarker(val) {
+      //This function uses the percentages to pick marker color
+    	var r, g, b = 0;
+    	if(val < 12) {
+    		r = Math.round(88-4*val);
+    		g = Math.round(140-6.4*val);
+        b = Math.round(255 - 4.4*val);
+    	} else if (val<35) {
+        r = Math.round(0+0.94*val);
+    		g = Math.round(63-1.15*val);
+    		b = 202;
+    	} else if (val<55) {
+        r = Math.round(52+0.68*val);
+    		g = Math.round(0+0.29*val);
+        b = Math.round(202+0.013*val);
+    	} else if (val<150) {
+        r = Math.round(155+0.4*val);
+    		g = Math.round(43-0.17*val);
+        b = Math.round(204+0.2*val);
+    	} else if (val<250) {
+        r = 255;
+        g = 0;
+        b = Math.round(255-0.28*val);
+    	} else {
+        r = 255;
+        g = 0;
+        b = 111;
+      }
+    	var h = r * 0x10000 + g * 0x100 + b * 0x1;
+    	return ('000000' + h.toString(16)).slice(-6);
+    }
+
+
+    function Get(yourUrl){
+      var Httpreq = new XMLHttpRequest(); // a new request
+      Httpreq.open("GET",yourUrl,false);
+      Httpreq.send(null);
+      return Httpreq.responseText;
+    }
+
+    var json_obj = JSON.parse(Get('https://www.purpleair.com/json'));
+    results = json_obj.results;
+
+    function requestMarkers() {
+      // no loading markers when zoomed way out
+      if (map.getZoom() < 3) { return };
+      // start dropping markers before the browser bogs down
+      if (results.length > 50) {
+        dropSuperfluousMarkers();
+      }
+      $.ajax({
+        // [snip typical ajax data request]
+        success: populateMarkers,
+      });
+    }
+
+    function populateMarkers(pointsData, status, xhr) {
+      //oh shit this function. This function retrieves the array of json data (results)
+      //then it pulls the lat and lon from json data as well as pm2.5 data
+      for (var i = 0, ii = results.length; i < ii; i++)  {
+        var lat = results[i].Lat;
+        var lng = results[i].Lon;
+        var pm = Math.round(results[i].PM2_5Value);
+        var color = colorMarker(pm);
+        //down here it makes a google maps marker placing it at the correct spot and creating an icon that stores pm2.5 val
+        var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(lat, lng),
+          draggable: false,
+          flat: true,
+          icon: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld='+pm+'|'+color+'|000000',
+          aq: pm
+        });
+        //this line lets you click on the markers and stores their values when you do.
+        marker.addListener('click', function() {
+          assignVal(this);
+        });
+        // hash the marker position
+        coordHash = calculateCoordinateHash(marker);
+
+        /*
+        if we haven't seen this hash, add the marker and mark as seen
+
+        without this, the markers array quickly grows unwieldy as duplicate points
+        are loaded
+        */
+        if(seenCoordinates[coordHash] == null) {
+          seenCoordinates[coordHash] = 1;
+          markers.push(marker);
+          marker.setMap(map);
+        }
+      }
+    }
+
+
+    // turn marker coordinates into a hash key
+    function calculateCoordinateHash(marker) {
+      var coordinatesHash = [ marker.getPosition().lat(),
+                              marker.getPosition().lng() ].join('');
+      return coordinatesHash.replace(".","").replace(",", "").replace("-","");
+    }
+
+    // remove markers that aren't currently visible
+    function dropSuperfluousMarkers() {
+      mapBounds = map.getBounds();
+      for (var i = 0, ii = results.length; i < ii; i++)  {
+        if (!markers[i]) {continue};
+        if (!mapBounds.contains(markers[i].getPosition())) {
+          // remove from the map
+          markers[i].setMap(null);
+
+          // remove from the record of seen markers
+          coordHash = calculateCoordinateHash(markers[i]);
+          if(seenCoordinates[coordHash]) {
+            seenCoordinates[coordHash] = null;
+          }
+
+          // remove from the markers array
+          markers.splice(i, 1);
+        }
+      }
+    }
+
+        // clear all markers from the map, empty the markers array and seen markers
+    function clearMarkers() {
+      for (var i = 0, ii = markers.length; i < ii; i++)  {
+        markers[i].setMap(null);
+      }
+      markers = [];
+      seenCoordinates = {};
+    }
+
+    function assignVal(mark) {
+      //This function is called when a marker is clicked. It assigns values to the two markers
+      if (marka == 'empty') {
+        marka = mark.aq;
+        markalat = mark.getPosition().lat();
+        markalon = mark.getPosition().lng();
+        checkVal(marka, markb);
+      }
+      else if (markb=='empty') {
+        markb = mark.aq;
+        markblat = mark.getPosition().lat();
+        markblon = mark.getPosition().lng();
+        checkVal(marka, markb);
+      } else {
+
+      }
+    }
+
+    function checkVal(marka, markb) {
+      //This function calls the music function when there are two values stored in marka and markb
+      if (marka == 'empty') {
+      }
+      else if (markb == 'empty') {
+      }
+      else {
+        playMusic(marka, markb);
+      }
+    }
+
+    function distance(lat1, lon1, lat2, lon2, unit) {
+    	if ((lat1 == lat2) && (lon1 == lon2)) {
+    		return 0;
+    	}
+    	else {
+    		var radlat1 = Math.PI * lat1/180;
+    		var radlat2 = Math.PI * lat2/180;
+    		var theta = lon1-lon2;
+    		var radtheta = Math.PI * theta/180;
+    		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    		if (dist > 1) {
+    			dist = 1;
+    		}
+    		dist = Math.acos(dist);
+    		dist = dist * 180/Math.PI;
+    		dist = dist * 60 * 1.1515;
+    		if (unit=="K") { dist = dist * 1.609344 }
+    		if (unit=="N") { dist = dist * 0.8684 }
+    		return dist;
+    	}
+    }
+
+    function playMusic(marka, markb) {
+      far = distance(markalat, markalon, markblat, markblon, "M");
+      var key = chooseKey(marka, markb);
+      playchords(key, marka, markb, far);
+      fillData(marka, markb, far)
+    }
+
+    markers = [];
+    seenCoordinates = {};
+    requestMarkers();
+
+    function wipe() {
+      location.reload();
+    }
+
+
+    </script>
+  </body>
+  <footer>
+    <script>
+      function DropFunction(id) {
+          var x = document.getElementById(id);
+          if (x.style.display == "none" || x.display == '') {
+            x.style.display = "block";
+          } else {
+            x.style.display = "none";
+          }
+        }
+
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on the button, open the modal
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+
+
+    </script>
+
+  </footer>
+</html>
