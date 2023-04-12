@@ -973,8 +973,9 @@ function fillData(marka, markb, far) {
       return Httpreq.responseText;
     }
 
-    var json_obj = JSON.parse(Get('https://www.purpleair.com/json'));
-    results = json_obj.results;
+    var json_obj = JSON.parse(Get('https://api.purpleair.com/v1/sensors?api_key=YOUR API KEY &fields=pm2.5%2C%20latitude%2C%20longitude&location_type=0'));
+    results = json_obj.data;
+  
 
     function requestMarkers() {
       // no loading markers when zoomed way out
@@ -993,9 +994,9 @@ function fillData(marka, markb, far) {
       //oh shit this function. This function retrieves the array of json data (results)
       //then it pulls the lat and lon from json data as well as pm2.5 data
       for (var i = 0, ii = results.length; i < ii; i++)  {
-        var lat = results[i].Lat;
-        var lng = results[i].Lon;
-        var pm = Math.round(results[i].PM2_5Value);
+        var lat = results[i][1];
+        var lng = results[i][2];
+        var pm = Math.round(results[i][3]);
         var color = colorMarker(pm);
         //down here it makes a google maps marker placing it at the correct spot and creating an icon that stores pm2.5 val
         var marker = new google.maps.Marker({
